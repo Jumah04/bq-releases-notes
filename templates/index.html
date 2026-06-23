@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Pulse</title>
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="Track Google Cloud BigQuery releases. View details, search and filter features, changes, and deprecated items, and tweet specific updates directly.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- CSS stylesheet link -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Toast Notification Area -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Sidebar / Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="url(#logo-grad)"/>
+                        <defs>
+                            <linearGradient id="logo-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#818cf8" />
+                                <stop offset="1" stop-color="#c084fc" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h1>BigQuery Release Pulse</h1>
+            </div>
+
+            <div class="header-actions">
+                <div class="stats-badge" id="stats-badge">
+                    <span class="pulse-dot"></span>
+                    <span id="update-count">0 Updates</span>
+                </div>
+                <button id="refresh-btn" class="btn btn-primary" aria-label="Refresh release notes">
+                    <span class="btn-text">Refresh</span>
+                    <svg class="spinner-icon" id="refresh-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="2" x2="12" y2="6"></line>
+                        <line x1="12" y1="18" x2="12" y2="22"></line>
+                        <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                        <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                        <line x1="2" y1="12" x2="6" y2="12"></line>
+                        <line x1="18" y1="12" x2="22" y2="12"></line>
+                        <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                        <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Filters Section -->
+        <section class="filters-section" aria-label="Filters">
+            <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="search-input" placeholder="Search release updates (e.g. JSON, pricing, parquet)..." aria-label="Search updates">
+                <button id="clear-search" class="clear-search-btn" style="display: none;" aria-label="Clear search">&times;</button>
+            </div>
+            
+            <div class="filters-group">
+                <div class="filter-dropdown-wrapper">
+                    <label for="type-filter" class="sr-only">Filter by type</label>
+                    <select id="type-filter" class="filter-select">
+                        <option value="all">All Types</option>
+                        <option value="feature">Features</option>
+                        <option value="change">Changes</option>
+                        <option value="deprecated">Deprecated</option>
+                        <option value="fixed">Fixed</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="filter-dropdown-wrapper">
+                    <label for="sort-select" class="sr-only">Sort by date</label>
+                    <select id="sort-select" class="filter-select">
+                        <option value="desc">Newest First</option>
+                        <option value="asc">Oldest First</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Skeleton Loading State -->
+            <div id="loading-state" class="skeleton-grid">
+                <div class="skeleton-card">
+                    <div class="skeleton-header">
+                        <div class="skeleton-circle"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-line long"></div>
+                        <div class="skeleton-line medium"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                    <div class="skeleton-footer"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-header">
+                        <div class="skeleton-circle"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-line long"></div>
+                        <div class="skeleton-line medium"></div>
+                    </div>
+                    <div class="skeleton-footer"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-header">
+                        <div class="skeleton-circle"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-line long"></div>
+                        <div class="skeleton-line medium"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                    <div class="skeleton-footer"></div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <div class="empty-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                </div>
+                <h2>No release notes found</h2>
+                <p>Try refining your search terms or filter selections.</p>
+                <button id="reset-filters-btn" class="btn btn-secondary">Reset Filters</button>
+            </div>
+
+            <!-- Releases Container -->
+            <div id="releases-container" class="releases-grid"></div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>BigQuery Release Pulse &bull; Powered by Flask, Vanilla JS, and Atom Feed Parser</p>
+        </footer>
+    </div>
+
+    <!-- Tweet Customization & Preview Modal -->
+    <div id="tweet-modal" class="modal-overlay" aria-hidden="true" role="dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Share to X (Twitter)</h2>
+                <button class="close-modal-btn" id="close-modal" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-instruction">Edit your post text below. It has been generated from the update details.</p>
+                
+                <div class="tweet-box-container">
+                    <textarea id="tweet-textarea" maxlength="280" placeholder="What's happening?"></textarea>
+                    
+                    <div class="tweet-box-footer">
+                        <span id="char-counter" class="char-counter">280</span>
+                    </div>
+                </div>
+
+                <div class="tweet-meta-preview">
+                    <span class="preview-label">Previewing post for:</span>
+                    <div class="preview-card">
+                        <span id="preview-date" class="preview-date">June 22, 2026</span>
+                        <span id="preview-type" class="preview-type-badge type-feature">Feature</span>
+                        <div id="preview-desc" class="preview-desc">You can now transfer metadata...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-tweet-btn" class="btn btn-secondary">Cancel</button>
+                <button id="confirm-tweet-btn" class="btn btn-tweet">
+                    <svg class="x-logo" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <span>Post on X</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS script link -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
